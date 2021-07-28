@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="52d98fc9-7050-4855-8b65-5b9649195a2c" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+
+
+	
+	<global-property doc:name="Global Property" doc:id="579e9737-79db-422a-bb5c-e83c485c2b18" name="env" value="local" />
+	<configuration-properties doc:name="Configuration properties" doc:id="a42fa1dd-10b2-43a7-b861-d76469b0b99f" file="configuration\local.properties" />
+	
+		<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="f81bc78f-21fc-4ba1-81ec-7ff303a32e69" file="configuration\local-secured.properties" key="Mayo7882*#*Redu2009*#*" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="23eaabda-f31c-4da4-8579-0dea0576385d" >
+		<salesforce:basic-connection username="${salesforce.username}" password="${secure::salesforce.password}" securityToken="${secure::salesforce.token}"/>
+	</salesforce:sfdc-config>
+	<flow name="cicd-sf1Flow" doc:id="bb6d2e31-91af-4007-b59f-0f2015a066eb" >
+		<http:listener doc:name="Listener" doc:id="86149a8d-5152-4fbb-b4c3-8dc819fd78ba" config-ref="HTTP_Listener_config" path="sf1"/>
+	<salesforce:query doc:id="5b1572a9-9947-45b5-83cf-144dc69e1a75" config-ref="Salesforce_Config" doc:name="Query" >
+			<salesforce:salesforce-query ><![CDATA[SELECT ID, Name,Phone FROM Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="9fda1337-bf14-4d26-91bc-a02290d7b047" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	
+	
+	</mule>
